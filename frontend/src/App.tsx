@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Toaster, toast } from "sonner";
 import { WalletProvider, useWallet } from "./lib/wallet";
 import { EscrowList } from "./components/EscrowList";
 import { CreateEscrowModal } from "./components/CreateEscrowModal";
+import { ActivityFeed } from "./components/ActivityFeed";
 import type { Escrow } from "./types/escrow";
 import { listEscrows, claimEscrow, refundEscrow } from "./lib/soroban";
 
@@ -15,31 +17,65 @@ function WalletMenu({
   disconnect: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [coords, setCoords] = useState({ top: 0, right: 0 });
+
+  const updateCoords = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom,
+        right: document.documentElement.clientWidth - rect.right,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      updateCoords();
+      window.addEventListener("resize", updateCoords);
+      window.addEventListener("scroll", updateCoords);
+    }
+    return () => {
+      window.removeEventListener("resize", updateCoords);
+      window.removeEventListener("scroll", updateCoords);
+    };
+  }, [open]);
+
   return (
     <div className="relative">
       <button
+        ref={buttonRef}
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 cursor-pointer rounded-lg border border-border bg-surface-raised px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-overlay"
       >
         {address.slice(0, 4)}…{address.slice(-4)}
         <span className="text-xs text-text-secondary opacity-70">▼</span>
       </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-2 w-40 z-50 rounded-lg border border-border bg-surface shadow-xl py-1">
-            <button
-              onClick={() => {
-                setOpen(false);
-                disconnect();
+      {open &&
+        createPortal(
+          <>
+            <div className="fixed inset-0 z-[9999]" onClick={() => setOpen(false)} />
+            <div
+              className="fixed w-40 z-[10000] rounded-lg border border-border bg-surface shadow-xl py-1"
+              style={{
+                top: `${coords.top + 8}px`,
+                right: `${coords.right}px`,
               }}
-              className="w-full text-left cursor-pointer px-4 py-2 text-sm text-red-400 hover:bg-surface-raised transition-colors"
             >
-              Disconnect
-            </button>
-          </div>
-        </>
-      )}
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  disconnect();
+                }}
+                className="w-full text-left cursor-pointer px-4 py-2 text-sm text-red-400 hover:bg-surface-raised transition-colors"
+              >
+                Disconnect
+              </button>
+            </div>
+          </>,
+          document.body
+        )}
     </div>
   );
 }
@@ -169,27 +205,35 @@ function EscrowBoard({ address }: { address: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Section header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-text-primary">Escrows</h2>
-        <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-xs font-medium text-text-secondary">
-          {loading ? "…" : escrows.length}
-        </span>
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      {/* Main escrow column */}
+      <div className="flex flex-1 flex-col gap-6 min-w-0">
+        {/* Section header */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-text-primary">Escrows</h2>
+          <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-xs font-medium text-text-secondary">
+            {loading ? "…" : escrows.length}
+          </span>
+        </div>
+
+        {/* Create button */}
+        <CreateEscrowModal onCreated={fetchEscrows} />
+
+        {/* List */}
+        <EscrowList
+          escrows={escrows}
+          loading={loading}
+          connectedAddress={address}
+          onClaim={handleClaim}
+          onRefund={handleRefund}
+          pendingIds={pendingIds}
+        />
       </div>
 
-      {/* Create button */}
-      <CreateEscrowModal onCreated={fetchEscrows} />
-
-      {/* List */}
-      <EscrowList
-        escrows={escrows}
-        loading={loading}
-        connectedAddress={address}
-        onClaim={handleClaim}
-        onRefund={handleRefund}
-        pendingIds={pendingIds}
-      />
+      {/* Activity feed sidebar */}
+      <div className="w-full lg:w-80 lg:sticky lg:top-20 shrink-0">
+        <ActivityFeed />
+      </div>
     </div>
   );
 }
@@ -198,7 +242,7 @@ function EscrowBoard({ address }: { address: string }) {
 function MainContent() {
   const { address, isConnected } = useWallet();
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
+    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
       {isConnected && address ? (
         <EscrowBoard address={address} />
       ) : (

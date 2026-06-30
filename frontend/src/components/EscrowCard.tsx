@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { toast } from "sonner";
 import type { Escrow } from "../types/escrow";
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -35,6 +37,55 @@ function StatusBadge({ status }: { status: Escrow["status"] }) {
     >
       {status}
     </span>
+  );
+}
+
+// ── CopyableAddress ─────────────────────────────────────────────────────
+interface CopyableAddressProps {
+  address: string;
+  connectedAddress: string | null;
+}
+
+function CopyableAddress({ address, connectedAddress }: CopyableAddressProps) {
+  const [copied, setCopied] = useState(false);
+  const isYou = connectedAddress?.toLowerCase() === address.toLowerCase();
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      toast.success("Address copied");
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy address:", err);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-end gap-1.5 font-mono text-text-primary text-right min-w-0">
+      {isYou && (
+        <span className="rounded bg-surface-overlay px-1.5 py-0.5 text-[9px] font-bold text-text-secondary uppercase tracking-wide shrink-0">
+          You
+        </span>
+      )}
+      <span className="truncate">{truncate(address)}</span>
+      <button
+        onClick={handleCopy}
+        className="text-text-secondary hover:text-text-primary transition-colors cursor-pointer p-0.5 rounded hover:bg-surface-overlay shrink-0 flex items-center justify-center"
+        title="Copy address"
+      >
+        {copied ? (
+          <svg className="h-3 w-3 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        ) : (
+          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        )}
+      </button>
+    </div>
   );
 }
 
@@ -77,15 +128,11 @@ export function EscrowCard({
       </div>
 
       {/* Address rows */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-xl bg-surface p-3 text-xs">
+      <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-xl bg-surface p-3 text-xs items-center">
         <span className="text-text-secondary">From</span>
-        <span className="truncate font-mono text-text-primary text-right">
-          {truncate(escrow.sender)}
-        </span>
+        <CopyableAddress address={escrow.sender} connectedAddress={connectedAddress} />
         <span className="text-text-secondary">To</span>
-        <span className="truncate font-mono text-text-primary text-right">
-          {truncate(escrow.recipient)}
-        </span>
+        <CopyableAddress address={escrow.recipient} connectedAddress={connectedAddress} />
       </div>
 
       {/* Deadline */}
