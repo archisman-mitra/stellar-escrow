@@ -23,18 +23,21 @@ https://github.com/archisman-mitra/stellar-escrow
 
 ---
 
-# Demo Video
+# 🎥 Demo Video
 
-> **Demo:** _(Add your YouTube/Loom video link here)_
+A complete walkthrough of the application demonstrating the full escrow workflow, smart contract interactions, and production-ready features.
+
+**Watch the demo:** https://youtu.be/L49EvbqMi7A
 
 The demo showcases:
 
-- Wallet connection
-- Creating an escrow
-- Claiming funds
-- Refunding after deadline
-- Live activity feed
-- Mobile responsive interface
+- Wallet connection using Stellar Wallets Kit
+- Creating a new escrow with XLM
+- Claiming locked funds as the recipient
+- Refunding an escrow after the deadline
+- Live Activity Feed powered by on-chain contract events
+- Mobile responsive user interface
+- End-to-end interaction with the deployed Soroban smart contract
 
 ---
 
