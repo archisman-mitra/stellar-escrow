@@ -126,7 +126,7 @@ function EscrowBoard({ address }: { address: string }) {
   const fetchEscrows = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await listEscrows();
+      const list = await listEscrows(address || undefined);
       setEscrows(list);
     } catch (error) {
       console.error("Failed to load escrows:", error);
@@ -134,7 +134,7 @@ function EscrowBoard({ address }: { address: string }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [address]);
 
   useEffect(() => {
     fetchEscrows();

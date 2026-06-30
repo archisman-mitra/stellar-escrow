@@ -222,11 +222,14 @@ export async function refundEscrow(
   }
 }
 
-export async function getEscrow(id: number): Promise<Escrow | null> {
+export const DEFAULT_SUBMITTER = "GAUNKJKGR62PSBPMNJD572O5Q6RJPFZABCRMFNDNCXH2HKQGNW4SSHVT";
+
+export async function getEscrow(id: number, sourceAddress?: string): Promise<Escrow | null> {
   try {
     const contract = new Contract(CONTRACT_ID);
     const op = contract.call("get_escrow", nativeToScVal(id, { type: "u32" }));
-    const dummyAccount = new Account("GBQVB2BTFKTIMY7MKIWGRPNGNQ2ZBXQNLR2G5Z7HKZBZ5K4XYZR5T3VW", "0");
+    const activeAddress = sourceAddress || DEFAULT_SUBMITTER;
+    const dummyAccount = new Account(activeAddress, "0");
     const tx = new TransactionBuilder(dummyAccount, {
       fee: BASE_FEE,
       networkPassphrase: NETWORK_PASSPHRASE,
@@ -261,11 +264,12 @@ export async function getEscrow(id: number): Promise<Escrow | null> {
   }
 }
 
-export async function getEscrowCount(): Promise<number> {
+export async function getEscrowCount(sourceAddress?: string): Promise<number> {
   try {
     const contract = new Contract(CONTRACT_ID);
     const op = contract.call("get_count");
-    const dummyAccount = new Account("GBQVB2BTFKTIMY7MKIWGRPNGNQ2ZBXQNLR2G5Z7HKZBZ5K4XYZR5T3VW", "0");
+    const activeAddress = sourceAddress || DEFAULT_SUBMITTER;
+    const dummyAccount = new Account(activeAddress, "0");
     const tx = new TransactionBuilder(dummyAccount, {
       fee: BASE_FEE,
       networkPassphrase: NETWORK_PASSPHRASE,
@@ -288,12 +292,12 @@ export async function getEscrowCount(): Promise<number> {
   }
 }
 
-export async function listEscrows(): Promise<Escrow[]> {
+export async function listEscrows(sourceAddress?: string): Promise<Escrow[]> {
   try {
-    const count = await getEscrowCount();
+    const count = await getEscrowCount(sourceAddress);
     const escrows: Escrow[] = [];
     for (let i = 1; i <= count; i++) {
-      const escrow = await getEscrow(i);
+      const escrow = await getEscrow(i, sourceAddress);
       if (escrow) {
         escrows.push(escrow);
       }
