@@ -8,7 +8,7 @@
 
 A production-ready decentralized escrow application built on **Stellar Soroban**. The application enables trustless peer-to-peer token escrow where funds remain securely locked on-chain until claimed by the intended recipient or refunded to the sender after a deadline.
 
-Built for **GDG Stellar Workshop – Monthly Builder Challenge**
+Built for **Stellar Journey to Mastery – Monthly Builder Challenge**
 **Level 3: Advanced Smart Contracts & Production Ready dApps**
 
 ---
