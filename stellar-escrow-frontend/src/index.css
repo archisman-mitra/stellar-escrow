@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/*
+ * ── Design Tokens (Tailwind v4 CSS-based config) ──────────────────────
+ * Accent: a vivid teal/cyan that pops on dark backgrounds.
+ */
+@theme {
+  --color-accent: #06d6a0;
+  --color-accent-hover: #05b88a;
+  --color-accent-muted: rgba(6, 214, 160, 0.12);
+  --color-surface: #111827;
+  --color-surface-raised: #1f2937;
+  --color-surface-overlay: #374151;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #9ca3af;
+  --color-border: #374151;
+}
+
+/* ── Global Resets ──────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
